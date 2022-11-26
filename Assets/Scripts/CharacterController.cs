@@ -9,10 +9,19 @@ public class CharacterController : MonoBehaviour, CharacterMap.IPlayerActions
     # region Fields
 
     [Header("Movement")] 
-    [Range(1, 10)] [SerializeField] private float _speed = 2;
-    [Range(1, 10)] [SerializeField] private float _maxSpeed = 2;
-    [Range(1, 10)] [SerializeField] private float _acceleration = 2;
-    [Range(1, 10)] [SerializeField] private float _deceleration = 2;
+    [SerializeField] private float _speed = 2;
+    [SerializeField] private float _maxSpeed = 2;
+    [SerializeField] private float _acceleration = 2;
+    [SerializeField] private float _deceleration = 2;
+
+    [Header("Dash")]
+    [SerializeField] private float _dashTime;
+    [SerializeField] private float _dashBonus;
+    [SerializeField] private float _dashCooldown;
+    private Vector3 _dashDirection; // used so we can keep tracking the input direction without changing dash direction
+    private bool _dash;
+    private float dashCooldownTimer;
+    private float dashingTime;
 
     private Rigidbody2D _rigidbody;
     private Vector2 _direction;
@@ -24,14 +33,23 @@ public class CharacterController : MonoBehaviour, CharacterMap.IPlayerActions
     #region Properties
 
     private Vector2 DesiredVelocity => _direction * _speed;
+    private bool Dashing => dashingTime > 0;
+    private float DashSpeed => _maxSpeed * _dashBonus;
 
     #endregion
 
     # region MonoBehaviour
+    
+    // =============================== MonoBehaviour ===================================================================
 
     void Start()
     {
         _rigidbody = GetComponent<Rigidbody2D>();
+    }
+
+    private void Update()
+    {
+        HandleTimers();
     }
 
     private void FixedUpdate()
@@ -61,14 +79,14 @@ public class CharacterController : MonoBehaviour, CharacterMap.IPlayerActions
 
     #region ActionMap
 
+    // =============================== Action Map ======================================================================
+    
     public void OnMove(InputAction.CallbackContext context)
     {
-        var inputDirection = Vector2.zero;
         switch (context.phase)
         {
             case InputActionPhase.Performed:
-                inputDirection = context.ReadValue<Vector2>();
-                _direction = inputDirection;
+                _direction = context.ReadValue<Vector2>();
                 break;
             case InputActionPhase.Canceled:
                 _direction = Vector2.zero;
@@ -76,16 +94,37 @@ public class CharacterController : MonoBehaviour, CharacterMap.IPlayerActions
         }
     }
 
+    public void OnDash(InputAction.CallbackContext context)
+    {
+        switch (context.phase)
+        {
+            case InputActionPhase.Started:
+                if (dashCooldownTimer > 0 || Dashing) return;
+                dashingTime = _dashTime;
+                dashCooldownTimer = _dashCooldown;
+                _dashDirection = _direction.normalized;
+                break;
+        }
+    }
+
     #endregion
 
     #region Class Methods
+    
+    // =============================== Class Methods ===================================================================
 
     private void MoveCharacter()
     {
+        if (Dashing)
+        {
+            _rigidbody.velocity = _dashDirection * DashSpeed;
+            return;
+        }
+        
         _rigidbody.velocity = Vector2.Lerp(_rigidbody.velocity,
             DesiredVelocity,
             _acceleration * Time.fixedDeltaTime);
-
+        
         if (DesiredVelocity.magnitude > _maxSpeed)
         {
             _rigidbody.velocity = DesiredVelocity / DesiredVelocity.magnitude * _maxSpeed;
@@ -94,7 +133,7 @@ public class CharacterController : MonoBehaviour, CharacterMap.IPlayerActions
 
     private void ModifyPhysics()
     {
-        //TODO: create Utils class?
+        //TODO: create Vector3 Utils class?
         float cosTheta = Vector3.Dot(_direction.normalized, _rigidbody.velocity.normalized);
         float theta = Mathf.Acos(cosTheta);
         bool changingDirection = Math.Abs(theta) >= Math.PI/2  ;
@@ -109,6 +148,12 @@ public class CharacterController : MonoBehaviour, CharacterMap.IPlayerActions
         }
 
         if (_direction.magnitude == 0 && _rigidbody.velocity.magnitude < 0.2f) { _rigidbody.velocity *= Vector2.zero; }
+    }
+
+    private void HandleTimers()
+    {
+        if (dashCooldownTimer > 0) { dashCooldownTimer = Mathf.Max(dashCooldownTimer - Time.deltaTime, 0); }
+        if (dashingTime > 0) { dashingTime = Mathf.Max(dashingTime - Time.deltaTime, 0); }
     }
 
     #endregion

@@ -332,6 +332,30 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 785876761506726257, guid: dca172e2e477d4840b7ef32dd2f9413a, type: 3}
+      propertyPath: _speed
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 785876761506726257, guid: dca172e2e477d4840b7ef32dd2f9413a, type: 3}
+      propertyPath: _dashTime
+      value: 0.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 785876761506726257, guid: dca172e2e477d4840b7ef32dd2f9413a, type: 3}
+      propertyPath: _maxSpeed
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 785876761506726257, guid: dca172e2e477d4840b7ef32dd2f9413a, type: 3}
+      propertyPath: _dashBonus
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 785876761506726257, guid: dca172e2e477d4840b7ef32dd2f9413a, type: 3}
+      propertyPath: _acceleration
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 3352697072945445586, guid: dca172e2e477d4840b7ef32dd2f9413a, type: 3}
+      propertyPath: m_AngularDrag
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4768744146256827584, guid: dca172e2e477d4840b7ef32dd2f9413a, type: 3}
       propertyPath: m_RootOrder
       value: 2
