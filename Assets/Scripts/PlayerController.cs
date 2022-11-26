@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class CharacterController : MonoBehaviour, CharacterMap.IPlayerActions
+public partial class PlayerController : MonoBehaviour, CharacterMap.IPlayerActions
 {
     # region Fields
 
@@ -34,7 +34,7 @@ public class CharacterController : MonoBehaviour, CharacterMap.IPlayerActions
 
     private Vector2 DesiredVelocity => _direction * _speed;
     private bool Dashing => dashingTime > 0;
-    private float DashSpeed => _maxSpeed * _dashBonus;
+    private float DashSpeed => _maxSpeed + _dashBonus;
 
     #endregion
 
@@ -45,11 +45,14 @@ public class CharacterController : MonoBehaviour, CharacterMap.IPlayerActions
     void Start()
     {
         _rigidbody = GetComponent<Rigidbody2D>();
+        _aimPivot = GameObject.Find("Aim Pivot");
+        _aimLine = GameObject.Find("Aim Line");
     }
 
     private void Update()
     {
         HandleTimers();
+        SetAim(); // Shooting Controller
     }
 
     private void FixedUpdate()
@@ -133,10 +136,7 @@ public class CharacterController : MonoBehaviour, CharacterMap.IPlayerActions
 
     private void ModifyPhysics()
     {
-        //TODO: create Vector3 Utils class?
-        float cosTheta = Vector3.Dot(_direction.normalized, _rigidbody.velocity.normalized);
-        float theta = Mathf.Acos(cosTheta);
-        bool changingDirection = Math.Abs(theta) >= Math.PI/2  ;
+        var changingDirection = Vector3.Angle(_direction, _rigidbody.velocity) >= 90;
 
         // Make "linear drag" when changing direction
         if (changingDirection)
